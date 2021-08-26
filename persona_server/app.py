@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from .softmax_model import run_simulation
+from flask_classful import FlaskView, route
 
 """To run the script use the command 'flask run --cert=adhoc' to enable HTTPS locally"""
 app = Flask(__name__,
@@ -8,25 +8,25 @@ app = Flask(__name__,
             template_folder='persona_vision_engine/static')
 
 
-@app.route('/')
-def load_engine():  # put application's code here
-    return render_template('persona.html')
+class MyServer(FlaskView):
+
+    def __init__(self):
+        self.request = None
+
+    def index(self):  # put application's code here
+        return render_template('persona.html')
+
+    @route('/data', methods=['POST'])
+    def receive(self):
+        # POST request
+        if request.method == 'POST':
+            print('Incoming..')
+            self.request = request.get_json()
+            print(self.request)  # parse as JSON
+            return 'OK', 200
 
 
-@app.route('/data', methods=['POST'])
-def receive():
+MyServer.register(app, route_base='/')
 
-    # POST request
-    if request.method == 'POST':
-        print('Incoming..')
-        print(request.get_json())  # parse as JSON
-        return 'OK', 200
-
-
-
-if __name__ == '__main__':
-    app.run(ssl_context='adhoc')
-    SoftMax.run_simulation()
-    SoftMax.get_result()
-    send_result(UE)
-
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', ssl_context='adhoc')
