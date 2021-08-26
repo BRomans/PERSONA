@@ -127,3 +127,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/persona_server/persona_vision_engine/static/node_modules/
