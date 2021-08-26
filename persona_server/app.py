@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify, request
+from .softmax_model import run_simulation
 
+"""To run the script use the command 'flask run --cert=adhoc' to enable HTTPS locally"""
 app = Flask(__name__,
             static_url_path='',
             static_folder='persona_vision_engine/static',
@@ -7,7 +9,7 @@ app = Flask(__name__,
 
 
 @app.route('/')
-def hello_world():  # put application's code here
+def load_engine():  # put application's code here
     return render_template('persona.html')
 
 
@@ -24,3 +26,7 @@ def receive():
 
 if __name__ == '__main__':
     app.run(ssl_context='adhoc')
+    SoftMax.run_simulation()
+    SoftMax.get_result()
+    send_result(UE)
+

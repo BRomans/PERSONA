@@ -1,7 +1,8 @@
 import math
 import random
-import numpy as np
 import arduino_distance
+import numpy as np
+
 
 # action selection based on Softmax probability
 def categorical_draw(probs):
@@ -14,6 +15,7 @@ def categorical_draw(probs):
         if cum_prob > z:
             return i
     return len(probs) - 1
+
 
 # Softmax algorithm
 class Softmax:
@@ -49,6 +51,13 @@ class Softmax:
         self.values[chosen_action] = new_value
         return
 
+    def start_computation(self):
+        # start running
+        print("fix me")
+
+    def get_results(self):
+        return self.results
+
 class Bernoulliaction():
     def __init__(self, p):
         self.p = p
@@ -60,7 +69,8 @@ class Bernoulliaction():
         else:
             return 1.0
 
-def test_algorithm(algo, actions, num_sims, horizon):
+
+def test_algorithm(algo, actions, num_sims, horizon, port="/dev/tty.usbmodem1411"):
     # Initialise variables for duration of accumulated simulation (num_sims * horizon_per_simulation)
     chosen_actions = [0.0 for i in range(num_sims * horizon)]
     rewards = [0.0 for i in range(num_sims * horizon)]
@@ -87,10 +97,11 @@ def test_algorithm(algo, actions, num_sims, horizon):
             # WITH ONLINE TRAINING, NO NEED FOR THE 2 BERNOUILLI LINES BELOW
 
             # Engage chosen Bernoulli action and obtain reward info
-            dict_sensor_rewards = {'d40': 3, 'd75': 2,'d150': 1, 'd200': 0, 'facing': 0, 'backing': 0, 'right': 1, 'left': 1}
+            dict_sensor_rewards = {'d40': 3, 'd75': 2, 'd150': 1, 'd200': 0, 'facing': 0, 'backing': 0, 'right': 1,
+                                   'left': 1}
             list_sensors = ['d40', 'd75', 'd150', 'd200', 'facing', 'backing', 'right', 'left']
-            #r = int(random.uniform(0, len(list_sensors)-1))
-            reaction = arduino_distance.return_arduino_distance()
+            # r = int(random.uniform(0, len(list_sensors)-1))
+            reaction = arduino_distance.return_arduino_distance(port)
             reward = dict_sensor_rewards[reaction]
             # reward = actions[chosen_action].draw() # TO REPLACE WITH REWARDS FORMED OF TRANSLATED INPUTS (DISTANCE...)
             rewards[index] = reward
@@ -105,38 +116,43 @@ def test_algorithm(algo, actions, num_sims, horizon):
 
     return [sim_nums, times, chosen_actions, rewards, cumulative_rewards]
 
-# AUTOMATIC SIMULATION #
-random.seed(1)
-# out of 5 actions, 1 action is clearly the best
-means = [0.1, 0.1, 0.1, 0.1, 0.1]
-n_actions = len(means)
-# Shuffling actions
-random.shuffle(means)
-# Create list of Bernoulli actions with Reward Information
-actions = list(map(lambda mu: Bernoulliaction(mu), means))
-print("Best action is " + str(np.argmax(means)))
-#f = open("standard_results_soft.tsv", "w+")
-# Create simulations for each tau/temperature value
-for tau in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]:
-    algo = Softmax(tau, [], [])
-    algo.initialize(n_actions)
-    n_trials_per_sim = 10
-    results = test_algorithm(algo, actions, 1, n_trials_per_sim)
 
-    # Store data
-    # len(results[0]) = 250 simulations, results[0] = nb of simulations so 1 as there is only 1 simulation here
-    # with a horizon of 250 trials/times.
-    last_trials_with_results = [n_trials_per_sim -3, n_trials_per_sim-2, n_trials_per_sim-1]
-    for i in last_trials_with_results:
-        print("Best action is " + str(np.argmax(means)))
-        print(str(tau) + "\t")
-        print("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
-        # results = [sim_nums, times, chosen_arms, rewards, cumulative_rewards]
+def run_simulation():
+    # AUTOMATIC SIMULATION #
+    random.seed(1)
+    # out of 5 actions, 1 action is clearly the best
+    means = [0.1, 0.1, 0.1, 0.1, 0.1]
+    n_actions = len(means)
+    # Shuffling actions
+    random.shuffle(means)
+    # Create list of Bernoulli actions with Reward Information
+    actions = list(map(lambda mu: Bernoulliaction(mu), means))
+    print("Best action is " + str(np.argmax(means)))
+    # f = open("standard_results_soft.tsv", "w+")
+    # Create simulations for each tau/temperature value
+    for tau in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]:
+        algo = Softmax(tau, [], [])
+        algo.initialize(n_actions)
+        n_trials_per_sim = 10
+        results = test_algorithm(algo, actions, 1, n_trials_per_sim)
 
-"""
-    for i in range(len(results[0])) :
-        f.write(str(epsilon) + "\t")
-        f.write("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
-f.close()
-"""
-# END OF SIMULATION #
+        # Store data
+        # len(results[0]) = 250 simulations, results[0] = nb of simulations so 1 as there is only 1 simulation here
+        # with a horizon of 250 trials/times.
+        last_trials_with_results = [n_trials_per_sim - 3, n_trials_per_sim - 2, n_trials_per_sim - 1]
+        for i in last_trials_with_results:
+            print("Best action is " + str(np.argmax(means)))
+            print(str(tau) + "\t")
+            print("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
+            # results = [sim_nums, times, chosen_arms, rewards, cumulative_rewards]
+
+    """
+        for i in range(len(results[0])) :
+            f.write(str(epsilon) + "\t")
+            f.write("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
+    f.close()
+    """
+    # END OF SIMULATION #
+
+
+run_simulation()
