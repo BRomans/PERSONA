@@ -1,3 +1,4 @@
+requests~=2.26.0
 Flask~=2.0.1
+numpy~=1.21.2
 pyserial~=3.5
-flask-classful
