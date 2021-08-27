@@ -1,3 +1,4 @@
+import datetime
 import math
 from persona_server import arduino_distance
 from multiprocessing.dummy import Pool as ThreadPool
@@ -6,6 +7,7 @@ from datetime import time
 from time import sleep
 import random
 from random import seed
+import csv
 
 
 address = "192.168.43.130"
@@ -54,7 +56,7 @@ class Softmax:
         return self.action
 
     def get_reward(self):
-        dict_sensor_rewards = {'d40' : 3, 'd75' : 2, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
+        dict_sensor_rewards = {'d40' : 2, 'd75' : 1, 'd150' : 1, 'd200' : 1, 'facing' : 0, 'backing' : 0,
                                'right' : 1, 'left' : 1}
         list_sensors = ['d40', 'd75', 'd150', 'd200', 'facing', 'backing', 'right', 'left']
         reaction = arduino_distance.return_arduino_distance()
@@ -199,13 +201,19 @@ if __name__ == '__main__':
     sim = Simulation_run()
     sim.initialize(n_actions)
     facing = True
-    while facing == True :
-        dic = sim.run_simulation()
-        print("times, chosen_action, rewards, cumulative_rewards")
-        print("dict_tau_properties =", dic)
-        expression = sim.get_latest_expression()
-        msgFromClient = "2," + str(expression)
-        bytesToSend = str.encode(msgFromClient)
-        print("Sending expression " + str(expression) + " to P.E.R.S.O.N.A. at " + address)
-        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-        sleep(1)
+    session_time = datetime.datetime.now()
+    time_string = session_time.strftime("%d_%m_%Y,%H_%M_%S")
+    with open('data/persona_learning_session_' + time_string + '.csv', newline='', mode='w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(['tau', 'prob_actions', 'results']) # results = "times, chosen_action, rewards, cumulative_rewards"
+        while facing == True :
+            dic = sim.run_simulation()
+            print("times, chosen_action, rewards, cumulative_rewards")
+            print("dict_tau_properties =", dic)
+            writer.writerow(dic)
+            expression = sim.get_latest_expression()
+            msgFromClient = "2," + str(expression)
+            bytesToSend = str.encode(msgFromClient)
+            print("Sending expression " + str(expression) + " to P.E.R.S.O.N.A. at " + address)
+            UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+            sleep(1)
