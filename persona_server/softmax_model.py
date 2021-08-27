@@ -1,8 +1,14 @@
 import math
-import random
 from persona_server import arduino_distance
-import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
+import socket
+from datetime import time
+from time import sleep
+import random
+
+
+address = "192.168.43.130"
+
 
 
 # Softmax algorithm # Softmax(self.tau, [], [], 0, 0, [], [])
@@ -160,6 +166,9 @@ class Simulation_run:
         self.algo.initialize(n_actions)
         self.trials.initialize(n_actions)
 
+    def get_latest_expression(self):
+        return self.dict_tau_properties[self.trials.times[0]][2][1][0] # dict[latest_iteration][results][expressionList][expression]
+
 
     def run_simulation_threaded(self):
         pool = ThreadPool(4)
@@ -190,6 +199,12 @@ class Simulation_run:
         return self.dict_tau_properties[self.trials.times[0]]
 
 if __name__ == '__main__':
+    serverAddressPort = (address, 3002)
+
+    bufferSize = 1024
+
+    # Create a UDP socket at client side
+    UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     n_actions = 5
     sim = Simulation_run()
     sim.initialize(n_actions)
@@ -198,3 +213,9 @@ if __name__ == '__main__':
         dic = sim.run_simulation()
         print("times, chosen_action, rewards, cumulative_rewards")
         print("dict_tau_properties =", dic)
+        expression = sim.get_latest_expression()
+        msgFromClient = "2," + str(expression)
+        bytesToSend = str.encode(msgFromClient)
+        print("Sending expression " + str(expression) + " to P.E.R.S.O.N.A. at " + address)
+        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+        sleep(1)
