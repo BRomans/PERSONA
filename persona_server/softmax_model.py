@@ -2,6 +2,7 @@ import math
 import random
 import arduino_distance
 import numpy as np
+from random import seed
 
 
 # Softmax algorithm # Softmax(self.tau, [], [], 0, 0, [], [])
@@ -29,8 +30,9 @@ class Softmax:
     # action selection based on Softmax probability
     def categorical_draw(self, probs):
         #print("probs =", probs)
-        z = random.random() # same value if too close in time !
-        print("z =", z)
+        #z = random.random() # same value if too close in time !
+        z = random.random()
+        #print("z =", z)
         cum_prob = 0.0
         for i in range(len(probs)):
             prob = probs[i]
@@ -49,7 +51,7 @@ class Softmax:
         return self.action
 
     def get_reward(self, port="/dev/tty.usbmodem1411"):
-        dict_sensor_rewards = {'d40' : 3, 'd75' : 2, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
+        dict_sensor_rewards = {'d40' : 2, 'd75' : 1, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
                                'right' : 1, 'left' : 1}
         list_sensors = ['d40', 'd75', 'd150', 'd200', 'facing', 'backing', 'right', 'left']
         # r = int(random.uniform(0, len(list_sensors)-1))
@@ -162,7 +164,7 @@ class Simulation_run:
 
     def run_simulation(self):
         # AUTOMATIC SIMULATION #
-        random.seed(1)
+        #random.seed(1)
         # out of 5 actions, 1 action is clearly the best
         means = [0.1, 0.1, 0.1, 0.2, 0.1] # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION -> try with tau = 0.5 only
         nb_actions = len(means) # REPLACE BY THE NUMBER OF POSSIBLE FACIAL EXPRESSIONS
@@ -185,6 +187,7 @@ class Simulation_run:
         return self.dict_tau_properties[self.trials.times[0]]
 
 if __name__ == '__main__':
+    seed(1)
     n_actions = 5
     sim = Simulation_run()
     sim.initialize(n_actions)
