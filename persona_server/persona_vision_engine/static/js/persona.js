@@ -143,14 +143,14 @@ var collisionEyeListener = async function (data, clock) {
             "y": data.y
         }
     }
-
+    console.log(facing);
     $.ajax({
         type: "POST",
         url: "https://127.0.0.1:5000/data",
         data: JSON.stringify({ "packet": packet }),
         contentType: "application/json",
         success: function (result) {
-            console.log(result);
+            //console.log(result);
         },
         error: function (result, status) {
             console.log(result);
