@@ -1,7 +1,8 @@
 import math
 import random
-import arduino_distance
+from persona_server import arduino_distance
 import numpy as np
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 # Softmax algorithm
@@ -45,12 +46,12 @@ class Softmax:
         self.action = self.categorical_draw(self.probs)
         return self.action
 
-    def get_reward(self, port="/dev/tty.usbmodem1411"):
+    def get_reward(self):
         dict_sensor_rewards = {'d40' : 3, 'd75' : 2, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
                                'right' : 1, 'left' : 1}
         list_sensors = ['d40', 'd75', 'd150', 'd200', 'facing', 'backing', 'right', 'left']
         # r = int(random.uniform(0, len(list_sensors)-1))
-        reaction = arduino_distance.return_arduino_distance(port)
+        reaction = arduino_distance.return_arduino_distance()
         self.reward = dict_sensor_rewards[reaction]
         return self.reward
         # reward = actions[chosen_action].draw()
@@ -88,7 +89,7 @@ class Bernoulliaction():
 
 
 class Algo_trials:
-    def __init__(self, algo, chosen_actions, rewards, times, cumulative_rewards,  sim_nums, num_sims = 1, horizon = 6, port="/dev/tty.usbmodem1411"):
+    def __init__(self, algo, chosen_actions, rewards, times, cumulative_rewards,  sim_nums, num_sims = 1, horizon = 1, port="/dev/tty.usbmodem1411"):
         self.algo = algo
         self.num_sims = num_sims
         self.horizon = horizon
@@ -148,11 +149,17 @@ class Algo_trials:
 class Simulation_run:
     def __init__(self):
         self.dict_tau_properties = {}
-        return
+        self.results = []
+        self.algo = Softmax(0.05, [], [], 0, 0, [], [])
+
 
     def initialize(self):
         self.dict_tau_properties = {}
-        return
+
+
+    def run_simulation_threaded(self):
+        pool = ThreadPool(4)
+        self.results = pool.map(self.run_simulation, [])
 
     def run_simulation(self):
         # AUTOMATIC SIMULATION #
@@ -165,11 +172,11 @@ class Simulation_run:
         # Create list of Bernoulli actions with Reward Information
         actions = list(map(lambda mu: Bernoulliaction(mu), means)) # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION
         # f = open("standard_results_soft.tsv", "w+")
-        # Create simulations for each tau/temperature value
+        # Create simulations for each tau/temperature value doing the while stuff with tau is 0.1, actually replace whike loop with if x == facing:
         for tau in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]:
-            algo = Softmax(tau, [], [], 0, 0, [], [])
-            algo.initialize(n_actions)
-            trials = Algo_trials(algo, [], [], [], [], [])
+            self.algo.set_tau(tau)
+            self.algo.initialize(n_actions)
+            trials = Algo_trials(self.algo, [], [], [], [], [])
             results = trials.performing_trials()
             # results[0] = nb of simulations so 1 as there is only 1 simulation here
             # with a horizon of n_trials_per_sim trials.
@@ -179,10 +186,10 @@ class Simulation_run:
                 print(str(tau) + "\t")
                 print("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
                 # results = [sim_nums, times, chosen_arms, rewards, cumulative_rewards]
-            self.dict_tau_properties[tau] = [algo.probs, trials.cumulative_rewards]
-        return self.dict_tau_properties
+            self.dict_tau_properties[tau] = [self.algo.probs, trials.cumulative_rewards]
+        return self.dict_tau_properties[tau]
 
-if __name__ == '__main__':
-    sim = Simulation_run()
-    dic = sim.run_simulation()
-    print("dict_tau_properties =", dic)
+#if __name__ == '__main__':
+   # sim = Simulation_run()
+   # dic = sim.run_simulation()
+    #print("dict_tau_properties =", dic)
