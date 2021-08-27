@@ -1,7 +1,4 @@
-from time import sleep
-import random
 import requests
-import json
 import socket
 from flask import Flask, render_template, jsonify, request
 from flask_classful import FlaskView, route
@@ -22,9 +19,12 @@ persona_gui_port = 3002
 class MyServer(FlaskView):
 
     def __init__(self):
+        n_actions = 5
         self.received = None
-        self.sim = Simulation_run()
-        self.sim.run_simulation_threaded()
+        #self.sim = Simulation_run()
+        #self.sim.initialize(n_actions)
+        #self.sim.run_simulation_threaded()
+
 
     def index(self):  # put application's code here
         return render_template('persona.html')
@@ -33,18 +33,17 @@ class MyServer(FlaskView):
     def receive(self):
         # POST request
         if request.method == 'POST':
-            print('Incoming from Vision Engine..')
+            #print('Incoming from Vision Engine..')
             self.received = request.get_json()  # parse as JSON
             packet = self.received['packet']
             facing = packet['facing']
-            rightEyeX = round(packet['right_eye']['x'], 1)
-            rightEyeY = round(packet['right_eye']['y'], 1)
-            leftEyeX = round(packet['left_eye']['x'], 1)
-            leftEyeY = round(packet['left_eye']['y'], 1)
-            print(facing)
+            rightEyeX = round(packet['right_eye']['x'], 0)
+            rightEyeY = round(packet['right_eye']['y'], 0)
+            leftEyeX = round(packet['left_eye']['x'], 0)
+            leftEyeY = round(packet['left_eye']['y'], 0)
+            print("A person is facing :" , facing)
             if facing is True:
-                expression = random.randint(1, 7)
-                self.send_learned_parameter_UDP(str(expression) + "," + str(rightEyeX) + "," + str(rightEyeY) + "," + str(leftEyeX) + "," + str(leftEyeY))
+                self.send_learned_parameter_UDP("1" + "," + str(rightEyeX) + "," + str(rightEyeY) + "," + str(leftEyeX) + "," + str(leftEyeY))
             return 'OK', 200
 
     @route('/learned', methods=['POST'])
