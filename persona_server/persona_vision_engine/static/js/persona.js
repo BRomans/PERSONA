@@ -112,14 +112,14 @@ var collisionEyeListener = async function (data, clock) {
         var line = d3.select('#eyeline1')
             .attr("x1", data.x)
             .attr("y1", data.y)
-            .attr("x2", rightEyeX)
-            .attr("y2", rightEyeY);
+            .attr("x2", previewWidth - fmPositions[145][0] * whr[0])
+            .attr("y2", fmPositions[145][1] * whr[1]);
 
         var line = d3.select("#eyeline2")
             .attr("x1", data.x)
             .attr("y1", data.y)
-            .attr("x2", leftEyeX)
-            .attr("y2", leftEyeY);
+            .attr("x2", previewWidth - fmPositions[374][0] * whr[0])
+            .attr("y2", fmPositions[374][1] * whr[1]);
 
         var dot = d3.select("#predictionSquare")
             .attr("x", data.x)
@@ -147,7 +147,7 @@ var collisionEyeListener = async function (data, clock) {
     $.ajax({
         type: "POST",
         url: "https://127.0.0.1:5000/data",
-        data: JSON.stringify({ "facing": packet }),
+        data: JSON.stringify({ "packet": packet }),
         contentType: "application/json",
         success: function (result) {
             console.log(result);
@@ -156,8 +156,10 @@ var collisionEyeListener = async function (data, clock) {
             console.log(result);
         }
     });
+    //await new Promise(r => setTimeout(r, 1000));
 }
 
-function persona_loop() {
-
+// sleep time expects milliseconds
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }

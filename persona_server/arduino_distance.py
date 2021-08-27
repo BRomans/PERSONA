@@ -4,7 +4,7 @@ import serial
 port = "COM3"  # On Windows
 
 
-def return_arduino_distance(port):
+def return_arduino_distance(port=port):
     ser = serial.Serial(port)
     string = ser.readline()
     numbers = []

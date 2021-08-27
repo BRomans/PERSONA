@@ -1,8 +1,15 @@
 import math
+from persona_server import arduino_distance
+from multiprocessing.dummy import Pool as ThreadPool
+import socket
+from datetime import time
+from time import sleep
 import random
-import arduino_distance
-import numpy as np
 from random import seed
+
+
+address = "192.168.43.130"
+
 
 
 # Softmax algorithm # Softmax(self.tau, [], [], 0, 0, [], [])
@@ -29,15 +36,11 @@ class Softmax:
 
     # action selection based on Softmax probability
     def categorical_draw(self, probs):
-        #print("probs =", probs)
-        #z = random.random() # same value if too close in time !
         z = random.random()
-        #print("z =", z)
         cum_prob = 0.0
         for i in range(len(probs)):
             prob = probs[i]
             cum_prob += prob
-            #print("cum_prob, i", cum_prob, i)
             if cum_prob > z:
                 return i
         return len(probs) - 1
@@ -50,12 +53,11 @@ class Softmax:
         self.action = self.categorical_draw(self.probs)
         return self.action
 
-    def get_reward(self, port="/dev/tty.usbmodem1411"):
-        dict_sensor_rewards = {'d40' : 2, 'd75' : 1, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
+    def get_reward(self):
+        dict_sensor_rewards = {'d40' : 3, 'd75' : 2, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
                                'right' : 1, 'left' : 1}
         list_sensors = ['d40', 'd75', 'd150', 'd200', 'facing', 'backing', 'right', 'left']
-        # r = int(random.uniform(0, len(list_sensors)-1))
-        reaction = arduino_distance.return_arduino_distance(port)
+        reaction = arduino_distance.return_arduino_distance()
         self.reward = dict_sensor_rewards[reaction]
         return self.reward
         # reward = actions[chosen_action].draw()
@@ -101,7 +103,6 @@ class Algo_trials:
         self.port = port
         self.cumulative_rewards = [0 for i in range(self.horizon)]
         self.times = [0.0 for i in range(self.horizon)]
-        #self.sim_nums = [0.0 for i in range(self.horizon)]
         self.times = [0.0 for i in range(self.horizon)]
         self.sim = 1
 
@@ -110,29 +111,23 @@ class Algo_trials:
         self.rewards = [0.0 for i in range(self.horizon)]
         self.cumulative_rewards = [0 for i in range(self.horizon)]
         self.times = [0.0 for i in range(self.horizon)]
-        #self.sim_nums = [0.0 for i in range(self.horizon)]
         self.algo.initialize(n_actions)  # if sim == 1: this else: self.algo = self.algo_before -> do not reset
         return
 
     def performing_trials(self):
         self.sim = self.sim + 1
-        #print("horizon =", self.horizon)
-        #print("len sim_nums =", len(self.sim_nums), self.sim_nums)
 
         for t in range(self.horizon):
             t = t + 1
             index = (self.sim - 2) * self.horizon + t - 1
             # print("sim =", sim, "index = ", index, "len sim_nums =", len(self.sim_nums))
-            #self.sim_nums[index] = self.sim
             self.times[t-1] = index
 
             # Selection of best action and engaging it
             chosen_action = self.algo.select_action()
             print("chosen_action =", chosen_action)
             reward = self.algo.get_reward()  # or algo.reward ?
-            #print("reward =", reward)
             self.rewards[t-1] = reward
-            #for i in range(len(self.cumulative_rewards)):
             self.cumulative_rewards[t-1] = self.cumulative_rewards[t-2] + reward
             self.chosen_actions[t-1] = chosen_action
             # HERE, SELECTION OF ACTIONS GENERATE A SET OF PARAMETERS FOR THE ASSOCIATED FACIAL EXPRESSION
@@ -154,17 +149,23 @@ class Simulation_run:
         self.tau = 0.5
         self.algo = Softmax(self.tau, [], [], 0, 0, [], [])
         self.trials = Algo_trials(self.algo, [], [], [], [])
-        return
+
 
     def initialize(self, n_actions):
         self.dict_tau_properties = {}
         self.algo.initialize(n_actions)
         self.trials.initialize(n_actions)
-        return
+
+    def get_latest_expression(self):
+        return self.dict_tau_properties[self.trials.times[0]][2][1][0] # dict[latest_iteration][results][expressionList][expression]
+
+
+    def run_simulation_threaded(self):
+        pool = ThreadPool(4)
+        self.results = pool.map(self.run_simulation, [])
 
     def run_simulation(self):
         # AUTOMATIC SIMULATION #
-        #random.seed(1)
         # out of 5 actions, 1 action is clearly the best
         means = [0.1, 0.1, 0.1, 0.2, 0.1] # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION -> try with tau = 0.5 only
         nb_actions = len(means) # REPLACE BY THE NUMBER OF POSSIBLE FACIAL EXPRESSIONS
@@ -188,6 +189,12 @@ class Simulation_run:
 
 if __name__ == '__main__':
     seed(1)
+    serverAddressPort = (address, 3002)
+
+    bufferSize = 1024
+
+    # Create a UDP socket at client side
+    UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     n_actions = 5
     sim = Simulation_run()
     sim.initialize(n_actions)
@@ -196,3 +203,9 @@ if __name__ == '__main__':
         dic = sim.run_simulation()
         print("times, chosen_action, rewards, cumulative_rewards")
         print("dict_tau_properties =", dic)
+        expression = sim.get_latest_expression()
+        msgFromClient = "2," + str(expression)
+        bytesToSend = str.encode(msgFromClient)
+        print("Sending expression " + str(expression) + " to P.E.R.S.O.N.A. at " + address)
+        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+        sleep(1)
