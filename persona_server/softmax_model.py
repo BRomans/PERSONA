@@ -5,7 +5,7 @@ import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
 
 
-# Softmax algorithm
+# Softmax algorithm # Softmax(self.tau, [], [], 0, 0, [], [])
 class Softmax:
     def __init__(self, tau, counts, values, reward, action, possible_actions, probs):
         self.tau = tau
@@ -29,19 +29,22 @@ class Softmax:
 
     # action selection based on Softmax probability
     def categorical_draw(self, probs):
-        z = random.random()
+        #print("probs =", probs)
+        z = random.random() # same value if too close in time !
+        print("z =", z)
         cum_prob = 0.0
         for i in range(len(probs)):
             prob = probs[i]
             cum_prob += prob
+            #print("cum_prob, i", cum_prob, i)
             if cum_prob > z:
                 return i
         return len(probs) - 1
 
     def select_action(self):
         # Calculate Softmax probabilities based on each round
-        z = sum([math.exp(v / self.tau) for v in self.values])
-        self.probs = [math.exp(v / self.tau) / z for v in self.values]
+        sum_z = sum([math.exp(v / self.tau) for v in self.values])
+        self.probs = [math.exp(v / self.tau) / sum_z for v in self.values]
         # Use categorical_draw to pick action
         self.action = self.categorical_draw(self.probs)
         return self.action
@@ -89,72 +92,73 @@ class Bernoulliaction():
 
 
 class Algo_trials:
-    def __init__(self, algo, chosen_actions, rewards, times, cumulative_rewards,  sim_nums, num_sims = 1, horizon = 1, port="/dev/tty.usbmodem1411"):
+    def __init__(self, algo, chosen_actions, rewards, times, cumulative_rewards,  horizon = 1, port="/dev/tty.usbmodem1411"): #sim_nums,
         self.algo = algo
-        self.num_sims = num_sims
         self.horizon = horizon
-        self.chosen_actions = [0 for i in range(self.num_sims * self.horizon)]
-        self.rewards = [0.0 for i in range(self.num_sims * self.horizon)]
+        self.chosen_actions = [0 for i in range(self.horizon)]
+        self.rewards = [0.0 for i in range(self.horizon)]
         self.port = port
-        self.cumulative_rewards = [0.0 for i in range(self.num_sims * self.horizon)]
-        self.times = [0.0 for i in range(self.num_sims * self.horizon)]
-        self.sim_nums = [0.0 for i in range(self.num_sims * self.horizon)]
-        self.times = [0.0 for i in range(self.num_sims * self.horizon)]
+        self.cumulative_rewards = [0 for i in range(self.horizon)]
+        self.times = [0.0 for i in range(self.horizon)]
+        #self.sim_nums = [0.0 for i in range(self.horizon)]
+        self.times = [0.0 for i in range(self.horizon)]
+        self.sim = 1
 
-    def initialize(self):
-        self.num_sims = 1
-        self.chosen_actions = [0 for i in range(self.num_sims * self.horizon)]
-        self.rewards = [0.0 for i in range(self.num_sims * self.horizon)]
-        self.cumulative_rewards = [0.0 for i in range(self.num_sims * self.horizon)]
-        self.times = [0.0 for i in range(self.num_sims * self.horizon)]
-        self.sim_nums = [0.0 for i in range(self.num_sims * self.horizon)]
+    def initialize(self, n_actions):
+        self.chosen_actions = [0 for i in range(self.horizon)]
+        self.rewards = [0.0 for i in range(self.horizon)]
+        self.cumulative_rewards = [0 for i in range(self.horizon)]
+        self.times = [0.0 for i in range(self.horizon)]
+        #self.sim_nums = [0.0 for i in range(self.horizon)]
+        self.algo.initialize(n_actions)  # if sim == 1: this else: self.algo = self.algo_before -> do not reset
         return
 
     def performing_trials(self):
-        for sim in range(self.num_sims):
-            sim = sim + 1
-            #print("horizon =", self.horizon)
-            #print("num_sims =", self.num_sims)
-            #print("len sim_nums =", len(self.sim_nums), self.sim_nums)
-            self.algo.initialize(len(self.algo.possible_actions))
+        self.sim = self.sim + 1
+        #print("horizon =", self.horizon)
+        #print("len sim_nums =", len(self.sim_nums), self.sim_nums)
 
+        for t in range(self.horizon):
+            t = t + 1
+            index = (self.sim - 2) * self.horizon + t - 1
+            # print("sim =", sim, "index = ", index, "len sim_nums =", len(self.sim_nums))
+            #self.sim_nums[index] = self.sim
+            self.times[t-1] = index
 
-            for t in range(self.horizon):
-                t = t + 1
-                index = (sim - 1) * self.horizon + t - 1
-                # print("sim =", sim, "index = ", index, "len sim_nums =", len(self.sim_nums))
-                self.sim_nums[index] = sim
-                self.times[index] = t
-
-                # Selection of best action and engaging it
-                chosen_action = self.algo.select_action()
-                reward = self.algo.get_reward()  # or algo.reward ?
-                # print("reward =", reward)
-                self.rewards[index] = reward
-                self.cumulative_rewards[index] += reward
-                self.chosen_actions[index] = chosen_action
-                # HERE, SELECTION OF ACTIONS GENERATE A SET OF PARAMETERS FOR THE ASSOCIATED FACIAL EXPRESSION
-                # REWARDS IS THE RESULT OF INPUT PARAMETERS, DISTANCE, EYE GAZE, FACIAL EXPRESSION
-                # WITH ONLINE TRAINING, NO NEED FOR THE 2 BERNOUILLI LINES BELOW
-                # Engage chosen Bernoulli action and obtain reward info
-                # index of the simulation == 0+1 i.e. first trial
-                if t == 1 :
-                    self.cumulative_rewards[index] = reward
-                else :
-                    self.cumulative_rewards[index] = self.cumulative_rewards[index - 1] + reward  # bc if algo.get_reward is called once more it might give a different reward
-                self.algo.update(chosen_action, reward)
-        return self.sim_nums, self.times, self.chosen_actions, self.rewards, self.cumulative_rewards
+            # Selection of best action and engaging it
+            chosen_action = self.algo.select_action()
+            print("chosen_action =", chosen_action)
+            reward = self.algo.get_reward()  # or algo.reward ?
+            #print("reward =", reward)
+            self.rewards[t-1] = reward
+            #for i in range(len(self.cumulative_rewards)):
+            self.cumulative_rewards[t-1] = self.cumulative_rewards[t-2] + reward
+            self.chosen_actions[t-1] = chosen_action
+            # HERE, SELECTION OF ACTIONS GENERATE A SET OF PARAMETERS FOR THE ASSOCIATED FACIAL EXPRESSION
+            # REWARDS IS THE RESULT OF INPUT PARAMETERS, DISTANCE, EYE GAZE, FACIAL EXPRESSION
+            # WITH ONLINE TRAINING, NO NEED FOR THE 2 BERNOUILLI LINES BELOW
+            # Engage chosen Bernoulli action and obtain reward info
+            # index of the simulation == 0+1 i.e. first trial
+            #if t == 1:
+                #self.cumulative_rewards[index] = reward
+            #else:
+            #self.cumulative_rewards[chosen_action] = self.cumulative_rewards[index - 1] + reward  # bc if algo.get_reward is called once more it might give a different reward
+            self.algo.update(chosen_action, reward)
+        return self.times, self.chosen_actions, self.rewards, self.cumulative_rewards #self.sim_nums,
 
 
 class Simulation_run:
     def __init__(self):
         self.dict_tau_properties = {}
-        self.results = []
-        self.algo = Softmax(0.05, [], [], 0, 0, [], [])
+        self.tau = 0.5
+        self.algo = Softmax(self.tau, [], [], 0, 0, [], [])
+        self.trials = Algo_trials(self.algo, [], [], [], [])
 
 
-    def initialize(self):
+    def initialize(self, n_actions):
         self.dict_tau_properties = {}
+        self.algo.initialize(n_actions)
+        self.trials.initialize(n_actions)
 
 
     def run_simulation_threaded(self):
@@ -165,31 +169,32 @@ class Simulation_run:
         # AUTOMATIC SIMULATION #
         random.seed(1)
         # out of 5 actions, 1 action is clearly the best
-        means = [0.1, 0.1, 0.1, 0.2, 0.1] # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION
-        n_actions = len(means) # REPLACE BY THE NUMBER OF POSSIBLE FACIAL EXPRESSIONS
+        means = [0.1, 0.1, 0.1, 0.2, 0.1] # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION -> try with tau = 0.5 only
+        nb_actions = len(means) # REPLACE BY THE NUMBER OF POSSIBLE FACIAL EXPRESSIONS
         # Shuffling actions
         random.shuffle(means) # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION
         # Create list of Bernoulli actions with Reward Information
         actions = list(map(lambda mu: Bernoulliaction(mu), means)) # THIS IS ONLY USEFUL FOR AN AUTOMATIC SIMULATION
-        # f = open("standard_results_soft.tsv", "w+")
-        # Create simulations for each tau/temperature value doing the while stuff with tau is 0.1, actually replace whike loop with if x == facing:
-        for tau in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]:
-            self.algo.set_tau(tau)
-            self.algo.initialize(n_actions)
-            trials = Algo_trials(self.algo, [], [], [], [], [])
-            results = trials.performing_trials()
-            # results[0] = nb of simulations so 1 as there is only 1 simulation here
-            # with a horizon of n_trials_per_sim trials.
-            last_trials_with_results = [trials.horizon - 3, trials.horizon - 2, trials.horizon - 1]
-            for i in last_trials_with_results:
-                print("Best action is " + str(np.argmax(means)))
-                print(str(tau) + "\t")
-                print("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
-                # results = [sim_nums, times, chosen_arms, rewards, cumulative_rewards]
-            self.dict_tau_properties[tau] = [self.algo.probs, trials.cumulative_rewards]
-        return self.dict_tau_properties[tau]
+        #for tau in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]:
+        # trials = Algo_trials(self.algo, [], [], [], [], [])
+        results = self.trials.performing_trials()
+        # results[0] = nb of simulations so 1 as there is only 1 simulation here
+        # with a horizon of n_trials_per_sim trials.
+        last_trials_with_results = [self.trials.horizon - 3, self.trials.horizon - 2, self.trials.horizon - 1]
+        #for i in range(self.trials.horizon): # last_trials_with_results:
+            #print("Best action is " + str(np.argmax(means)))
+            #print(str(self.tau) + "\t")
+            #print("\t".join([str(results[j][i]) for j in range(len(results))]) + "\n")
+            # results = [times, chosen_action, rewards, cumulative_rewards]
+        self.dict_tau_properties[self.trials.times[0]] = [self.tau, self.algo.probs, results]
+        return self.dict_tau_properties[self.trials.times[0]]
 
-#if __name__ == '__main__':
-   # sim = Simulation_run()
-   # dic = sim.run_simulation()
-    #print("dict_tau_properties =", dic)
+if __name__ == '__main__':
+    n_actions = 5
+    sim = Simulation_run()
+    sim.initialize(n_actions)
+    facing = True
+    while facing == True :
+        dic = sim.run_simulation()
+        print("times, chosen_action, rewards, cumulative_rewards")
+        print("dict_tau_properties =", dic)
