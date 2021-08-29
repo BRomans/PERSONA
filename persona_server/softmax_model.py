@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     # Create a UDP socket at client side
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    n_actions = 5
+    n_actions = 11
     sim = Simulation_run()
     sim.initialize(n_actions)
     facing = True
@@ -212,7 +212,7 @@ if __name__ == '__main__':
             print("dict_tau_properties =", dic)
             writer.writerow(dic)
             expression = sim.get_latest_expression()
-            msgFromClient = "2," + str(expression)
+            msgFromClient = "2," + str(expression) + ','
             bytesToSend = str.encode(msgFromClient)
             print("Sending expression " + str(expression) + " to P.E.R.S.O.N.A. at " + address)
             UDPClientSocket.sendto(bytesToSend, serverAddressPort)
