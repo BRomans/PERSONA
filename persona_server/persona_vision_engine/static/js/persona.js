@@ -1,7 +1,7 @@
 //import jQuery from "./jquery.min.js";
 //window.$ = window.jQuery = jQuery;
 // Set to true if you want to save the data even if you reload the page.
-window.saveDataAcrossSessions = false;
+window.saveDataAcrossSessions = true;
 
 const personaDetectorSVG = "personaDetectorSVG";
 var force = [];
