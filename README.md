@@ -6,3 +6,13 @@ Several modules, listed below, have been integrated together to obtain the final
 - The implementation of the Multi-Armed Bandit problem using SoftMax algorithm to train P.E.R.S.O.N.A. has been inspired by [Kenneth Foo](https://medium.com/analytics-vidhya/multi-armed-bandit-analysis-of-softmax-algorithm-e1fa4cb0c422).
 - The 3D model and facial expression of P.E.R.S.O.N.A. have been created using [MetaHuman](https://www.unrealengine.com/en-US/metahuman-creator?sessionInvalidated=true) and [UnrealEngine](https://www.unrealengine.com/).
 - The ultrasonic proximity sensor is powered by [Arduino](https://www.tutorialspoint.com/arduino/arduino_ultrasonic_sensor.htm)
+
+
+To run the computer vision server, go to the right folder with
+`cd persona_server`
+
+Then if you are running server and Unreal Engine on the same local network, use
+`flask run --cert=adhoc --port=5000`
+
+Remember to change `persona_gui_addr` in `app.py` with the address of the pc running UE. On the same pc, you can use
+`persona_gui_addr = 'localhost'`
