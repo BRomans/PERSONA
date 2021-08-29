@@ -19,7 +19,6 @@ persona_gui_port = 3002
 class MyServer(FlaskView):
 
     def __init__(self):
-        n_actions = 5
         self.received = None
         #self.sim = Simulation_run()
         #self.sim.initialize(n_actions)
@@ -44,6 +43,8 @@ class MyServer(FlaskView):
             print("A person is facing :" , facing)
             if facing is True:
                 self.send_learned_parameter_UDP("1" + "," + str(rightEyeX) + "," + str(rightEyeY) + "," + str(leftEyeX) + "," + str(leftEyeY))
+            else:
+                self.send_learned_parameter_UDP("0" + "," + str(rightEyeX) + "," + str(rightEyeY) + "," + str(leftEyeX) + "," + str(leftEyeY))
             return 'OK', 200
 
     @route('/learned', methods=['POST'])
