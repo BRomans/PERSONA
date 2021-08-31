@@ -1,7 +1,7 @@
 # P.E.R.S.O.N.A.
 
 ## Portraying Empathic Robotic Simulations Of Natural Affections
-This repository contains the core of P.E.R.S.O.N.A., an AI created for artistic expression of human empathy during the [CreARTathon](https://creartathon.com/) competition.
+This repository contains the core of P.E.R.S.O.N.A., an AI created for artistic expression of human empathy during the [CreARTathon](https://creartathon.com/) competition. P.E.R.S.O.N.A. is an interactive reinforcement learning model, it learns to communicate with the human participant through facial expressions.
 Several modules, listed below, have been integrated together to obtain the final art piece:
 
 ![System Architecture Scheme](pics/PERSONA_architecture.jpg)
