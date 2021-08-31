@@ -7,10 +7,10 @@ Several modules, listed below, have been integrated together to obtain the final
 ![System Architecture Scheme](pics/PERSONA_architecture.jpg)
 
 
-- The computer vision module is based [WebGazer](https://github.com/brownhci/WebGazer).
+- The computer vision module is based on [WebGazer](https://github.com/brownhci/WebGazer) and [TensorFlowJS - Face Landmarks Detection](https://github.com/tensorflow/tfjs-models/tree/master/face-landmarks-detection).
 - The implementation of the Multi-Armed Bandit problem using SoftMax algorithm to train P.E.R.S.O.N.A. has been inspired by [Kenneth Foo](https://medium.com/analytics-vidhya/multi-armed-bandit-analysis-of-softmax-algorithm-e1fa4cb0c422).
 - The 3D model and facial expression of P.E.R.S.O.N.A. have been created using [MetaHuman](https://www.unrealengine.com/en-US/metahuman-creator?sessionInvalidated=true) and [UnrealEngine](https://www.unrealengine.com/).
-- The ultrasonic proximity sensor is powered by [Arduino](https://www.tutorialspoint.com/arduino/arduino_ultrasonic_sensor.htm)
+- The ultrasonic proximity sensor is powered by [Arduino](https://www.tutorialspoint.com/arduino/arduino_ultrasonic_sensor.htm).
 
 
 To run the computer vision server, go to the right folder with
