@@ -16,7 +16,7 @@ def return_arduino_distance(port=port):
         reaction = 'd40'
     elif 75 <= n < 150:
         reaction = 'd75'
-    elif 150 <= n < 200:
+    elif 150 <= n < 230:
         reaction = 'd150'
     else:
         reaction = 'd200'
