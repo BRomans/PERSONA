@@ -11,7 +11,8 @@ app = Flask(__name__,
             template_folder='persona_vision_engine/static')
 
 persona_vision_addr = "http://localhost:5000/"
-persona_gui_addr = "192.168.43.130"
+#persona_gui_addr = "192.168.43.130"
+persona_gui_addr = "127.0.0.1"
 persona_gui_port = 3002
 
 

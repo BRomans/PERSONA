@@ -10,7 +10,9 @@ from random import seed
 import csv
 
 
-address = "192.168.43.130"
+#address = "192.168.43.130"
+address = "127.0.0.1"
+
 
 
 

@@ -1,7 +1,7 @@
 import serial
 
 #port = "/dev/tty.usbmodem1411"  # On Mac/Linux
-port = "COM3"  # On Windows
+port = "COM4"  # On Windows
 
 
 def return_arduino_distance(port=port):
