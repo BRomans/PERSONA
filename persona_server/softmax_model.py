@@ -56,8 +56,8 @@ class Softmax:
         return self.action
 
     def get_reward(self):
-        dict_sensor_rewards = {'d40' : 2, 'd75' : 1, 'd150' : 1, 'd200' : 1, 'facing' : 0, 'backing' : 0,
-                               'right' : 1, 'left' : 1}
+        dict_sensor_rewards = {'d40' : 2, 'd75' : 1, 'd150' : 1, 'd200' : 0, 'facing' : 0, 'backing' : 0,
+                               'right' : 0, 'left' : 0}
         list_sensors = ['d40', 'd75', 'd150', 'd200', 'facing', 'backing', 'right', 'left']
         reaction = arduino_distance.return_arduino_distance()
         self.reward = dict_sensor_rewards[reaction]
