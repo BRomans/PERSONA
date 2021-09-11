@@ -1,0 +1,7 @@
+Persona_Interface/Content filter=lfs diff=lfs merge=lfs -text
+Persona_Interface/Content/MetaHumans/Vivian/SourceAssets/Vivian.dna[[:space:]] filter=lfs diff=lfs merge=lfs -text
+Persona_Interface/Content/MetaHumans/Vivian/SourceAssets/maps/underwear_color_map.tga[[:space:]] filter=lfs diff=lfs merge=lfs -text
+Persona_Interface/Content/MetaHumans/Common/Female/Textures/female001/female_chest_normal_map.uasset filter=lfs diff=lfs merge=lfs -text
+Persona_Interface/Content/MetaHumans/Vivian/Female/Textures/female001/female_chest_normal_map.uasset filter=lfs diff=lfs merge=lfs -text
+Persona_Interface/Content/Creartathon/Vivian_FaceMesh.uasset filter=lfs diff=lfs merge=lfs -text
+Persona_Interface/Content/MetaHumans/Common/Face/Face_Archetype.uasset filter=lfs diff=lfs merge=lfs -text
