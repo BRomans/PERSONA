@@ -1,4 +1,6 @@
+
 # P.E.R.S.O.N.A.
+https://github.com/user-attachments/assets/03f331dd-f44e-4dd4-a571-94b6b8dd6e2a
 
 ## Portraying Empathic Robotic Simulations Of Natural Affections
 This repository contains the core of P.E.R.S.O.N.A., an AI created for artistic expression of human empathy during the [CreARTathon](https://creartathon.com/) competition. P.E.R.S.O.N.A. is an interactive reinforcement learning model, it learns to communicate with the human participant through facial expressions.
@@ -73,3 +75,8 @@ Graphic Design and Fine Arts.
 ![Team](pics/team.jpg)
 
 From left to right Joséphine Raugel, Anaïs Legros, Julia Valeria Lopez Rojas, Léo Thizy and Michele Romani.
+
+
+
+
+
